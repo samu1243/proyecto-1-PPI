@@ -104,7 +104,7 @@ public class ListaEnlazada {
     }
     
 
-    public int getTamanio() {
+    public int getMagnitud() {
         return magnitud;
     }
 
