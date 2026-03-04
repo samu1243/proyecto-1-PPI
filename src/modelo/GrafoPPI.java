@@ -1,264 +1,272 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+/**
+ *
+ * @author Samuel Djekki, Juan Ferreira, 
+ *      
  */
 package modelo;
 
-/**
- *
- * @author Samuel Djekki
- */
+
+//grafo no dirigido implemetado con lista de adyacencia
+
 public class GrafoPPI {
-    private ListaEnlazada vertices;      
-    private ListaEnlazada[] adyacencia;  
-    
+    private ListaEnlazada vertices;          
+    private ListaEnlazada[] adyacencia;      
+    private static final int CAPACIDAD_INICIAL = 500;
+
     public GrafoPPI() {
         this.vertices = new ListaEnlazada();
-        this.adyacencia = new ListaEnlazada[500]; 
+        this.adyacencia = new ListaEnlazada[CAPACIDAD_INICIAL];
         inicializarAdyacencia();
     }
-    
+
     private void inicializarAdyacencia() {
         for (int i = 0; i < adyacencia.length; i++) {
             adyacencia[i] = new ListaEnlazada();
         }
     }
+
+    private void expandirArreglo() {
+        ListaEnlazada[] nueva = new ListaEnlazada[adyacencia.length * 2];
+        System.arraycopy(adyacencia, 0, nueva, 0, adyacencia.length);
+        for (int i = adyacencia.length; i < nueva.length; i++) {
+            nueva[i] = new ListaEnlazada();
+        }
+        adyacencia = nueva;
+    }
+
+     //agg un vertice si ya no existe
     
     public boolean agregarVertice(String id) {
-        if (buscarVertice(id) != -1) {
-            return false; 
-        }
-        
+        if (buscarVertice(id) != -1) return false;
         Vertice nuevo = new Vertice(id);
         vertices.agregar(nuevo);
-        
-        if (vertices.getMagnitud() > adyacencia.length) {
-            expandirArreglo();
-        }
-        
+        if (vertices.getMagnitud() > adyacencia.length) expandirArreglo();
         return true;
     }
+
     
-    public boolean agregarVertice(String id, String nombre) {
-        if (buscarVertice(id) != -1) {
-            return false;
-        }
-        
-        Vertice nuevo = new Vertice(id, nombre);
-        vertices.agregar(nuevo);
-        
-        if (vertices.getMagnitud() > adyacencia.length) {
-            expandirArreglo();
-        }
-        
-        return true;
-    }
-        public int buscarVertice(String id) {
+    //search de un vertice por su id
+     
+    public int buscarVertice(String id) {
         for (int i = 0; i < vertices.getMagnitud(); i++) {
             Vertice v = (Vertice) vertices.obtener(i);
-            if (v.getId().equals(id)) {
-                return i;
-            }
+            if (v.getId().equals(id)) return i;
         }
         return -1;
     }
-        
-   public void agregarArista(String origen, String destino, double peso) {
 
-    int i = buscarVertice(origen);
-    int j = buscarVertice(destino);
-
-    if (i == -1 || j == -1) {
-        System.out.println("Vertices no existen");
-        return;
+    public Vertice getVertice(String id) {
+        int i = buscarVertice(id);
+        return (i != -1) ? (Vertice) vertices.obtener(i) : null;
     }
 
-    Vertice vOrigen = (Vertice) vertices.obtener(i);
-    Vertice vDestino = (Vertice) vertices.obtener(j);
-    Arista nueva =new Arista(vOrigen, vDestino, peso);
-    adyacencia[i].agregar(nueva);
-    }
-        
-    private void expandirArreglo() {
-        ListaEnlazada[] nuevaAdyacencia = new ListaEnlazada[adyacencia.length * 2];
-        for (int i = 0; i < adyacencia.length; i++) {
-            nuevaAdyacencia[i] = adyacencia[i];
-        }
-        for (int i = adyacencia.length; i < nuevaAdyacencia.length; i++) {
-            nuevaAdyacencia[i] = new ListaEnlazada();
-        }
-        adyacencia = nuevaAdyacencia;
-    }   
     
-    //BFS recursivo 
-   private void DFSRec(boolean[] revisado, int indice, ListaEnlazada resultado) {
+    //return de todos los vertices
+    
+    public ListaEnlazada getVertices() {
+        return vertices;
+    }
 
-    revisado[indice] = true; //Es para que el programa no se quede en un bucle
+    //valida si existe una arista entre dos vertices por i.
 
-    // obtener vértice actual
-    Vertice actual = (Vertice) vertices.obtener(indice);
-    resultado.agregar(actual.getId());
-
-    // recorrer lista de adyacencia
-    ListaEnlazada vecinos = adyacencia[indice];
-
-    for (int i = 0; i < vecinos.getMagnitud(); i++) {
-
-        Arista arista = (Arista) vecinos.obtener(i);
-        Vertice vecino = arista.getDestino();
-        int indiceVecino = buscarVertice(vecino.getId());
-
-        if (revisado[indiceVecino] == false){ 
-            DFSRec(revisado, indiceVecino, resultado);//Termina la iteracion se vuelve a llamar la funcion
+    private boolean existeArista(int i, int j) {
+        ListaEnlazada lista = adyacencia[i];
+        for (int k = 0; k < lista.getMagnitud(); k++) {
+            Arista a = (Arista) lista.obtener(k);
+            if (buscarVertice(a.getDestino().getId()) == j) return true;
         }
+        return false;
     }
-  }
-   
-   //Este metodo llama al recursivo, es para cuando el grafo esta desconectado
-   public ListaEnlazada DFS() {
 
-    int n = vertices.getMagnitud();
+      //agg una arita no dirigida entre dos protina
 
-    boolean[] revisado = new boolean[n]; //Crea un array de booleanos
-    ListaEnlazada resultado = new ListaEnlazada(); //Crea una nueva lista enlazada para guardar los datos que devuelve
+    public void agregarArista(String origen, String destino, double peso) {
+        int i = buscarVertice(origen);
+        int j = buscarVertice(destino);
+        if (i == -1 || j == -1) return;
+        if (existeArista(i, j)) return;
 
-    for (int i = 0; i < n; i++) {
+        Vertice vOrigen = (Vertice) vertices.obtener(i);
+        Vertice vDestino = (Vertice) vertices.obtener(j);
+        Arista a1 = new Arista(vOrigen, vDestino, peso);
+        Arista a2 = new Arista(vDestino, vOrigen, peso);
+        adyacencia[i].agregar(a1);
+        adyacencia[j].agregar(a2);
+        vOrigen.setGrado(vOrigen.getGrado() + 1);
+        vDestino.setGrado(vDestino.getGrado() + 1);
+    }
 
-        if (revisado[i] == false) {
-            DFSRec(revisado, i, resultado); //Se llama a la funcion recursiva
+    
+    //delete d una arista en los 2 lados
+     
+    public boolean eliminarArista(String origen, String destino) {
+        int i = buscarVertice(origen);
+        int j = buscarVertice(destino);
+        if (i == -1 || j == -1) return false;
+
+        boolean ok = eliminarAristaDesde(i, destino);
+        if (ok) {
+            eliminarAristaDesde(j, origen);
+            Vertice vOrigen = (Vertice) vertices.obtener(i);
+            Vertice vDestino = (Vertice) vertices.obtener(j);
+            vOrigen.setGrado(vOrigen.getGrado() - 1);
+            vDestino.setGrado(vDestino.getGrado() - 1);
         }
+        return ok;
     }
 
-    return resultado;
+    private boolean eliminarAristaDesde(int idx, String destId) {
+        ListaEnlazada lista = adyacencia[idx];
+        for (int k = 0; k < lista.getMagnitud(); k++) {
+            Arista a = (Arista) lista.obtener(k);
+            if (a.getDestino().getId().equals(destId)) {
+                lista.eliminar(k);
+                return true;
+            }
+        }
+        return false;
     }
-   
-   public ListaEnlazada BFS() {
 
-    int n = vertices.getMagnitud();
-    boolean[] revisado = new boolean[n]; //Similar a dfs
-    ListaEnlazada resultado = new ListaEnlazada();
+    
+    //delete un vertice y todas sus aritas
 
-    //Se crea una "cola" (la teoria es similar pero no cumple todas las restriciones de una cola) 
-    int[] cola = new int[n];
-    int frente = 0;
-    int fin = 0;
+    public boolean eliminarVertice(String id) {
+        int idx = buscarVertice(id);
+        if (idx == -1) return false;
 
-    for (int i = 0; i < n; i++) {
+        ListaEnlazada aristas = adyacencia[idx];
+        while (aristas.getMagnitud() > 0) {
+            Arista a = (Arista) aristas.obtener(0);
+            String vecinoId = a.getDestino().getId();
+            eliminarArista(id, vecinoId); // update de grados y las 2 listas
+        }
 
-        if (revisado[i] == false) {
-            
-            revisado[i] = true;
-            cola[fin++] = i; // encolar
+        vertices.eliminar(idx);
 
-            while (frente < fin) {
+        for (int i = idx; i < vertices.getMagnitud(); i++) {
+            adyacencia[i] = adyacencia[i + 1];
+        }
+        adyacencia[vertices.getMagnitud()] = new ListaEnlazada(); 
 
-                int indice = cola[frente++]; // desencolar 
+        return true;
+    }
 
-                Vertice actual =(Vertice) vertices.obtener(indice);
-                resultado.agregar(actual.getId());
-                ListaEnlazada vecinos =adyacencia[indice];
+    
+     //get de los componentes conexos del grafo usando bfs
+     //retorna la listaenlazada donde cada elemento es una listaenalazada con los id de un componente
+     
+    public ListaEnlazada getComponentesConexos() {
+        int n = vertices.getMagnitud();
+        boolean[] visitado = new boolean[n];
+        ListaEnlazada componentes = new ListaEnlazada();
 
-                for (int j = 0; j < vecinos.getMagnitud(); j++) {
+        for (int i = 0; i < n; i++) {
+            if (!visitado[i]) {
+                ListaEnlazada componente = new ListaEnlazada();
+                int[] cola = new int[n];
+                int frente = 0, fin = 0;
+                visitado[i] = true;
+                cola[fin++] = i;
 
-                    Arista arista = (Arista) vecinos.obtener(j);
-                    Vertice vecino = arista.getDestino();
-
-                    int indiceVecino = buscarVertice(vecino.getId());
-
-                    if (revisado[indiceVecino] == false) {
-                        
-                        revisado[indiceVecino] = true;
-                        cola[fin++] = indiceVecino;
-                        
+                while (frente < fin) {
+                    int u = cola[frente++];
+                    Vertice v = (Vertice) vertices.obtener(u);
+                    componente.agregar(v.getId());
+                    ListaEnlazada vecinos = adyacencia[u];
+                    for (int k = 0; k < vecinos.getMagnitud(); k++) {
+                        Arista a = (Arista) vecinos.obtener(k);
+                        int vIdx = buscarVertice(a.getDestino().getId());
+                        if (!visitado[vIdx]) {
+                            visitado[vIdx] = true;
+                            cola[fin++] = vIdx;
+                        }
                     }
+                }
+                componentes.agregar(componente);
+            }
+        }
+        return componentes;
+    }
+
+    
+    // ruta más corta (peso) entre dos proteinas usando dijkstra
+     
+    public Ruta dijkstra(String origen, String destino) {
+        int n = vertices.getMagnitud();
+        int s = buscarVertice(origen);
+        int t = buscarVertice(destino);
+        if (s == -1 || t == -1) return null;
+
+        double[] dist = new double[n];
+        boolean[] visitado = new boolean[n];
+        int[] prev = new int[n];
+        for (int i = 0; i < n; i++) {
+            dist[i] = Double.MAX_VALUE;
+            prev[i] = -1;
+        }
+        dist[s] = 0;
+
+        for (int i = 0; i < n; i++) {
+            int u = -1;
+            double min = Double.MAX_VALUE;
+            for (int j = 0; j < n; j++) {
+                if (!visitado[j] && dist[j] < min) {
+                    min = dist[j];
+                    u = j;
+                }
+            }
+            if (u == -1) break;
+            visitado[u] = true;
+            if (u == t) break;
+
+            ListaEnlazada vecinos = adyacencia[u];
+            for (int k = 0; k < vecinos.getMagnitud(); k++) {
+                Arista a = (Arista) vecinos.obtener(k);
+                int v = buscarVertice(a.getDestino().getId());
+                if (v == -1) continue;
+                double peso = a.getPeso();
+                if (!visitado[v] && dist[u] + peso < dist[v]) {
+                    dist[v] = dist[u] + peso;
+                    prev[v] = u;
                 }
             }
         }
+
+        if (dist[t] == Double.MAX_VALUE) return null; //no hay ruta
+
+        //rebuild del camino
+        ListaEnlazada camino = new ListaEnlazada();
+        int actual = t;
+        while (actual != -1) {
+            Vertice v = (Vertice) vertices.obtener(actual);
+            camino.insertar(0, v.getId());
+            actual = prev[actual];
+        }
+        return new Ruta(camino, dist[t]);
     }
 
-    return resultado; //Devuelve la lista de los datos
- }
-   
-   public ListaEnlazada Dijkstra(String idOrigen, String idDestino) {
 
-    int n = vertices.getMagnitud();
+        //calcula la centralidad de los vértices.
 
-    int indiceOrigen = buscarVertice(idOrigen);
-    int indiceDestino = buscarVertice(idDestino);
-
-    ListaEnlazada camino = new ListaEnlazada();
-
-    if (indiceOrigen == -1 || indiceDestino == -1) {System.out.println("Origen o destino no existen");
-        return camino; //Cuando no hay nodo origen o nodo destino
-    }
-
-    double[] distancia = new double[n]; //distancia min desde origen
-    boolean[] revisado = new boolean[n]; //los que ya se revisaron
-    int[] previo = new int[n]; //guarda el veritce anterior
-
-    // Inicialización
-    for (int i = 0; i < n; i++) {
-        distancia[i] = Double.MAX_VALUE; //Integer.MAX_VALUE es el valor máximo que puede almacenar un int
-        previo[i] = -1; //es que no hay anterior
-    }
-
-    distancia[indiceOrigen] = 0;
-    //Aqui empieza el algoritmo
-    for (int i = 0; i < n; i++) {
-
-        int u = -1;
-        double menor = Double.MAX_VALUE; 
-
-        // buscar vértice no visitado más cercano
-        for (int j = 0; j < n; j++) {
-            if (revisado[j] == false && distancia[j] < menor) {
-                menor = distancia[j];
-                u = j; //  u es el vértice a procesar
-            }
+    public ListaEnlazada getHubs() {
+        //convierte a un array
+        int n = vertices.getMagnitud();
+        Vertice[] arr = new Vertice[n];
+        for (int i = 0; i < n; i++) {
+            arr[i] = (Vertice) vertices.obtener(i);
         }
 
-        if (u == -1) //ya no hay mas vertices
-            break;
-
-        revisado[u] = true;
-        if (u == indiceDestino)
-            break;
-
-        // recorrer vecinos
-       ListaEnlazada vecinos = adyacencia[u]; // Lista de aristas desde u
-
-        for (int k = 0; k < vecinos.getMagnitud(); k++) {
-            Arista arista =(Arista) vecinos.obtener(k);
-            Vertice vecino = arista.getDestino();
-            int v = buscarVertice(vecino.getId());
-            if (v == -1) continue;
-            double peso = arista.getPeso();
-
-            //si se encuentra un camino mas corto
-            if (revisado[v] == false &&  distancia[u] + peso < distancia[v]) {
-                distancia[v] = distancia[u] + peso; 
-                previo[v] = u;
+        for (int i = 0; i < n-1; i++) {
+            for (int j = i+1; j < n; j++) {
+                if (arr[i].getGrado() < arr[j].getGrado()) {
+                    Vertice tmp = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = tmp;
+                }
             }
         }
+        ListaEnlazada ordenados = new ListaEnlazada();
+        for (Vertice v : arr) ordenados.agregar(v);
+        return ordenados;
     }
-
-    // reconstruye el camino
-    if (distancia[indiceDestino] == Double.MAX_VALUE) {
-        System.out.println("No existe ruta");
-        return camino;
-    }
-
-    int actual = indiceDestino;
-    while (actual != -1) { 
-        Vertice v = (Vertice) vertices.obtener(actual);
-       camino.insertar(0, v.getId()); //Inserta al inicio
-       actual = previo[actual];
-    }
-
-    System.out.println( "Distancia total: "+ distancia[indiceDestino]);
-
-    return camino;
 }
-
-}
-
