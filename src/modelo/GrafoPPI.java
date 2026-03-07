@@ -155,7 +155,7 @@ public class GrafoPPI {
      //get de los componentes conexos del grafo usando bfs
      //retorna la listaenlazada donde cada elemento es una listaenalazada con los id de un componente
      
-    public ListaEnlazada getComponentesConexos() {
+    public ListaEnlazada getComponentesConexosBFS() {
         int n = vertices.getMagnitud();
         boolean[] visitado = new boolean[n];
         ListaEnlazada componentes = new ListaEnlazada();
@@ -186,6 +186,34 @@ public class GrafoPPI {
             }
         }
         return componentes;
+    }
+    
+    public ListaEnlazada getComponentesConexosDFS() {
+    int n = vertices.getMagnitud();
+    boolean[] visitado = new boolean[n];
+    ListaEnlazada componentes = new ListaEnlazada();
+    for (int i = 0; i < n; i++) {
+        if (!visitado[i]) {
+            ListaEnlazada componente = new ListaEnlazada();
+            dfsRecursivo(i, visitado, componente);
+            componentes.agregar(componente);
+        }
+    }
+    return componentes;
+}
+
+    private void dfsRecursivo(int i, boolean[] visitado, ListaEnlazada componente) {
+        visitado[i] = true;
+        Vertice v = (Vertice) vertices.obtener(i);
+        componente.agregar(v.getId());
+        ListaEnlazada vecinos = adyacencia[i];
+        for (int k = 0; k < vecinos.getMagnitud(); k++) {
+            Arista a = (Arista) vecinos.obtener(k);
+            int vIdx = buscarVertice(a.getDestino().getId());
+            if (!visitado[vIdx]) {
+                dfsRecursivo(vIdx, visitado, componente);
+            }
+        }
     }
 
     
@@ -246,7 +274,7 @@ public class GrafoPPI {
     }
 
 
-        //calcula la centralidad de los vértices.
+        //calcula la centralidad de los vertices.
 
     public ListaEnlazada getHubs() {
         //convierte a un array
@@ -268,5 +296,9 @@ public class GrafoPPI {
         ListaEnlazada ordenados = new ListaEnlazada();
         for (Vertice v : arr) ordenados.agregar(v);
         return ordenados;
+    }
+
+    public ListaEnlazada[] getAdyacencia() {
+        return adyacencia;
     }
 }

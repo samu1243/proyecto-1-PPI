@@ -199,9 +199,13 @@ public class Controlador {
 
     //hace un get los componentes conexos del grafo
 
-    public ListaEnlazada getComponentes() {
-        return grafo.getComponentesConexos();
+    public ListaEnlazada getComponentesBFS() {
+        return grafo.getComponentesConexosBFS();
     }
+    
+    public ListaEnlazada getComponentesDFS() {
+        return grafo.getComponentesConexosDFS();
+}
 
     //get de la ruta mas corta
     public Ruta getRutaCorta(String origen, String destino) {
