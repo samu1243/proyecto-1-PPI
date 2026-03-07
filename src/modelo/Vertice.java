@@ -23,7 +23,7 @@ public class Vertice {
     
     public Vertice(String id, String nombre){
         this.id = id;
-        this.nombre = id;
+        this.nombre = nombre;
         this.grado = 0;
     }
     public String getId() { return id; }

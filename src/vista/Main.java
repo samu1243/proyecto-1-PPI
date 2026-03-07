@@ -2,7 +2,7 @@ package vista;
 
 /**
  *
- * @author Diego
+ * @author Juan Ferreira
  */
 import vista.Ventana;
 import javax.swing.SwingUtilities;
