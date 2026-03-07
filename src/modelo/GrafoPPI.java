@@ -216,6 +216,44 @@ public class GrafoPPI {
         }
     }
 
+    // DFS recursivo modificado para trabajar con componentes
+    private void DFSComponentesConexos(boolean[] revisado, int indice, ListaEnlazada componente) {
+        revisado[indice] = true;
+
+        // obtiene el vértice actual
+        Vertice actual = (Vertice) vertices.obtener(indice);
+        componente.agregar(actual.getId());
+
+        // recorre la lista de adyacencia
+        ListaEnlazada vecinos = adyacencia[indice];
+
+        for (int i = 0; i < vecinos.getMagnitud(); i++) {
+            Arista arista = (Arista) vecinos.obtener(i);
+            Vertice vecino = arista.getDestino();
+            int indiceVecino = buscarVertice(vecino.getId());
+
+            if (!revisado[indiceVecino]) { 
+                DFSComponentesConexos(revisado, indiceVecino, componente);
+            }
+        }
+    }
+
+    // Método que devuelve los componentes conexos usando DFS
+    public ListaEnlazada getComponentesConexosDFS() {
+        int n = vertices.getMagnitud();
+        boolean[] revisado = new boolean[n];
+        ListaEnlazada componentes = new ListaEnlazada();
+
+        for (int i = 0; i < n; i++) {
+            if (!revisado[i]) {
+                ListaEnlazada componente = new ListaEnlazada();
+                DFSComponentesConexos(revisado, i, componente);
+                componentes.agregar(componente);
+            }
+        }
+
+        return componentes;
+    }
     
     // ruta más corta (peso) entre dos proteinas usando dijkstra
      
